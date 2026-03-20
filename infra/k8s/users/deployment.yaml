@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users
+  namespace: micro-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: users }
+  template:
+    metadata:
+      labels: { app: users }
+    spec:
+      containers:
+        - name: users
+          image: yourrepo/users:latest
+          ports:
+            - containerPort: 4002
+          env:
+            - name: PORT
+              value: "4002"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: JWT_SECRET
+            - name: MONGO_URI
+              value: mongodb://mongodb:27017/usersdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users
+  namespace: micro-demo
+spec:
+  selector: { app: users }
+  ports:
+    - port: 4002
+      targetPort: 4002

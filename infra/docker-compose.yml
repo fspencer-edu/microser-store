@@ -1,0 +1,72 @@
+services:
+  frontend:
+    build: ../frontend
+    ports: ["3000:3000"]
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    depends_on: [gateway]
+
+  gateway:
+    build: ../services/gateway
+    ports: ["8080:8080"]
+    environment:
+      PORT: 8080
+      AUTH_SERVICE_URL: http://auth:4001
+      USER_SERVICE_URL: http://users:4002
+      ORDER_SERVICE_URL: http://orders:4003
+      NOTIFICATION_SERVICE_URL: http://notifications:4004
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: devsecret
+    depends_on: [auth, users, orders, notifications, redis]
+
+  auth:
+    build: ../services/auth
+    environment:
+      PORT: 4001
+      MONGO_URI: mongodb://mongodb:27017/authdb
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: devsecret
+    depends_on: [mongodb, rabbitmq]
+
+  users:
+    build: ../services/users
+    environment:
+      PORT: 4002
+      MONGO_URI: mongodb://mongodb:27017/usersdb
+      JWT_SECRET: devsecret
+    depends_on: [mongodb]
+
+  orders:
+    build: ../services/orders
+    environment:
+      PORT: 4003
+      MONGO_URI: mongodb://mongodb:27017/ordersdb
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: devsecret
+    depends_on: [mongodb, rabbitmq]
+
+  notifications:
+    build: ../services/notifications
+    environment:
+      PORT: 4004
+      MONGO_URI: mongodb://mongodb:27017/notificationsdb
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: devsecret
+    depends_on: [mongodb, rabbitmq]
+
+  mongodb:
+    image: mongo:7
+    ports: ["27017:27017"]
+    volumes: [mongo_data:/data/db]
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: ["5672:5672", "15672:15672"]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+volumes:
+  mongo_data:

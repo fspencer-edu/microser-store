@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications
+  namespace: micro-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: notifications }
+  template:
+    metadata:
+      labels: { app: notifications }
+    spec:
+      containers:
+        - name: notifications
+          image: yourrepo/notifications:latest
+          ports:
+            - containerPort: 4004
+          env:
+            - name: PORT
+              value: "4004"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: JWT_SECRET
+            - name: MONGO_URI
+              value: mongodb://mongodb:27017/notificationsdb
+            - name: RABBITMQ_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: RABBITMQ_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications
+  namespace: micro-demo
+spec:
+  selector: { app: notifications }
+  ports:
+    - port: 4004
+      targetPort: 4004

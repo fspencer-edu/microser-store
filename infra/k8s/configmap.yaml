@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: micro-demo
+data:
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  JWT_SECRET: devsecret
+  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+  AUTH_SERVICE_URL: http://auth:4001
+  USER_SERVICE_URL: http://users:4002
+  ORDER_SERVICE_URL: http://orders:4003
+  NOTIFICATION_SERVICE_URL: http://notifications:4004

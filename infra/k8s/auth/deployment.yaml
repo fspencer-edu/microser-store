@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: micro-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: auth }
+  template:
+    metadata:
+      labels: { app: auth }
+    spec:
+      containers:
+        - name: auth
+          image: yourrepo/auth:latest
+          ports:
+            - containerPort: 4001
+          env:
+            - name: PORT
+              value: "4001"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: JWT_SECRET
+            - name: MONGO_URI
+              value: mongodb://mongodb:27017/authdb
+            - name: RABBITMQ_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: RABBITMQ_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  namespace: micro-demo
+spec:
+  selector: { app: auth }
+  ports:
+    - port: 4001
+      targetPort: 4001
